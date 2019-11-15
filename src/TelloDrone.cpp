@@ -26,7 +26,7 @@
                 this->networkPswd = password;
         
          WiFi.disconnect(true);
-                // config 
+ 
                 IPAddress myIP(192,168,10,2);
                 IPAddress gateway(192,168,10,1);
                 IPAddress subnet(255,255,255,0); 
@@ -36,29 +36,28 @@
                 
                 WiFi.disconnect();
 
-                // set eventlistener for wifi                
+                // Set eventlistener for wifi                
                 WiFi.onEvent([this](WiFiEvent_t event, system_event_info_t info) {this->WiFiEvent(event, info); });
 
 
-                // configure wifi
+                // Configure wifi
                 WiFi.config(myIP,gateway,subnet); 
                 
                 //Initiate connection
-               // WiFi.begin(networkName, networkPswd);
+                // WiFi.begin(networkName, networkPswd);
                 WiFi.begin(ssid, password);
                 Serial.println("Waiting for WIFI connection");
                 udp.begin(udpPort);
         }
 
-        //wifi event handler
+        //Wifi event handler
         void TelloDrone::WiFiEvent(WiFiEvent_t event, system_event_info_t info){
                 switch(event) {
                         case SYSTEM_EVENT_STA_GOT_IP:
                                 //When connected set
                                 Serial.print("WiFi connected! IP address: ");
                                 Serial.println(WiFi.localIP());
-                                //initializes the UDP state
-                                //This initializes the transfer buffer
+                                //Initializes the UDP state
                                 udp.begin(WiFi.localIP(),udpPort);
                                  
                                 this->connected = true;
@@ -87,7 +86,6 @@
                 udp.endPacket();
                
         }
-
 
 
 
