@@ -6,22 +6,29 @@
 #include <iostream>
 #include <sstream> 
 
-TelloDrone drone; //create an instance of TelloDrone
+TelloDrone drone; //create an instance of the class 'TelloDrone'
 
+//Allocate the controller's components to Esp32's GPIO pins
+
+//LEDs:
 const int red_LED=23;
 const int green_LED =18;
 
+//Buttons:
 const int up_btn=22;
 const int down_btn=19;
 const int cw_btn= 4;       
 const int ccw_btn= 5;
 
+//Potentiometer:
 const int speed_potent=33;
 
+//Joystick:
 const int VRx = 34; 
 const int VRy= 35;  
 const int SW = 15; 
 
+//Define, initialize variables which are used in the program
 int joystick_x = 0;
 int joystick_y = 0;
 int joystick_btn = 0;
@@ -47,43 +54,49 @@ void setup(){
  
   Serial.begin(9600);
 
+  //Assign functioning mode to pins(INPUT/ OUTPUT)
+  
+  //LEDs:
   pinMode(red_LED, OUTPUT);
   pinMode(green_LED, OUTPUT);
+  digitalWrite(red_LED, HIGH); // red LED is set ON
+  digitalWrite(green_LED, LOW); // green LED is set OFF
 
-  digitalWrite(red_LED, HIGH);
-  digitalWrite(green_LED, LOW);
-
+  //Buttons:
   pinMode(up_btn, INPUT_PULLUP);
   pinMode(down_btn, INPUT_PULLUP);
   pinMode(cw_btn, INPUT_PULLUP);
   pinMode(ccw_btn, INPUT_PULLUP);
 
+  //Potentiometer:
   pinMode(speed_potent, INPUT);
 
+  //Joystick:
   pinMode(VRx, INPUT);
   pinMode(VRy, INPUT);
   pinMode(SW, INPUT_PULLUP); 
 
-  drone.connect("TELLO-FE2FC4", "");
+  drone.connect("TELLO-FE2FC4", ""); //Achieve connection between Esp32 board and Tello drone
   delay(5000);
-
-  sendCommand("speed 20");
+  
+  sendCommand("speed 20"); //Initialize drone's speed to 20cm/s
   flying=false;
 }
 
 void loop(){
 
-  if(drone.connected){
+  if(drone.connected){ //This part is executed only if a connection is achieved
 
       digitalWrite(green_LED, HIGH); 
       digitalWrite(red_LED, LOW); 
 
-      //Joystick:
+      //Joystick (forward/ back/ left/ right/ takeoff/ land):
       joystick_x = analogRead(VRx);
       joystick_y = analogRead(VRy);
       joystick_btn = digitalRead(SW);
 
-      map_x= map(joystick_x, 0, 4095, -50, 50);
+      //Map the acquired analogue values to an accepted range by the drone    
+      map_x= map(joystick_x, 0, 4095, -50, 50); 
       map_y= map(joystick_y, 0, 4095, -50, 50);
 
       if(((map_x<10 && map_x>-20) && (map_y>-30 && map_y<30))==false){
@@ -96,7 +109,9 @@ void loop(){
           stable=false;
         }  
 
-      if(((map_x<10 && map_x>-20) && (map_y>-30 && map_y<30))==true && stable==false){
+      //If the Joystick is back to the 'resting' position and the drone is moving -> send 'rc 0 0 0 0' command 
+      //-> make it stop moving and stay in the same position
+      if(((map_x<10 && map_x>-20) && (map_y>-30 && map_y<30))==true && stable==false){ 
           String com="rc ";
           com= com + 0 + " " + 0 + " 0 0";
           sendCommand(com.c_str());
@@ -116,185 +131,47 @@ void loop(){
         delay(200);
       }
 
-      //Potentiometer:
+      //Potentiometer (set speed):
       potent_speed=analogRead(speed_potent);
-      mapped_potent_speed=map(potent_speed, 0, 4095, 20, 100); 
+
+      //Map the acquired analogue values to an accepted range by the drone 
+      mapped_potent_speed=map(potent_speed, 0, 4095, 20, 100);
   
-      if(mapped_potent_speed!=drone_speed){
-          drone_speed=mapped_potent_speed;
+      if(mapped_potent_speed!=drone_speed){ 
+          drone_speed=mapped_potent_speed; 
           String speedy="speed ";
           speedy=speedy + drone_speed;
           sendCommand(speedy.c_str());
           delay(200); 
         } 
 
-      //Buttons:
+      //Buttons (up/ down/ cw/ ccw):
       if(digitalRead(up_btn)==LOW){
-        sendCommand("up 20");
+        sendCommand("up 30");
         delay(150);
       }
 
       if(digitalRead(down_btn)==LOW){
-        sendCommand("down 20");
+        sendCommand("down 30");
         delay(150);
       }
 
       if(digitalRead(cw_btn)==LOW){
-        sendCommand("cw 40");
+        sendCommand("cw 23");
         delay(150);
       }
 
       if(digitalRead(ccw_btn)==LOW){
-        sendCommand("ccw 40");
-        delay(150);
-      }
-
-
-        /*if(!((joystick_x>1800 && joystick_x<1900) && (joystick_y>1700 && joystick_y<1800))){
-          String com="rc ";
-          com= com + map_x + " " + map_y + " 0 0";
-          sendCommand(com.c_str());
-        } */
-       
-
-     /* if((joystick_x>= 1700 && joystick_x<=2000) && (joystick_y<10)){
-        sendCommand("forward 50");
-        delay(150);
-      }
-      
-      if((joystick_x>= 1700 && joystick_x<=2000) && joystick_y>=4000){
-        sendCommand("back 50");
-        delay(150);
-      }
-      
-
-      if(joystick_x<10  && (joystick_y>1600 && joystick_y<2000)){
-        sendCommand("left 50");
-        delay(150);
-      }
-
-      if(joystick_x>=3900 && (joystick_y>1600 && joystick_y<2000)){
-        sendCommand("right 50");
+        sendCommand("ccw 23");
         delay(150);
       }  
-      */
-
-      
-      /*if(digitalRead(upbtn)==LOW){
-        sendCommand("left 100");
-        delay(1000);
-      } */
-
-     /* if(digitalRead(landbtn)==LOW){
-      sendCommand("land");
-      flying=false;
-      delay(1000);
-      }  */
-      
-
-
-
-      /* if(map_x<512 && map_y==512){
-        sendCommand("right 100");
-        delay(1000);
-      }
-
-      if(map_x>512 && map_y==512){
-        sendCommand("left 100");
-        delay(1000);
-      }
-      */
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      /*if(btn.pressed==true){
-        sendCommand("land");
-      } 
-
-       if(digitalRead(btn)==LOW){
-        locked=!locked;
-        delay(500);
-      } */
-    
-
-
-
-
-
-
-    /*sendCommand("up 100");
-    delay(2000);
-
-    sendCommand("down 100");
-    delay(5000);
-    */
-
-    
-    //sendCommand("command");
-  /* if(btn.pressed){
-      sendCommand("land");
-       delay(5000);
-   } */
-
    
- // Serial.println("...repeating in 5 sec..."); 
-  //drone.getResponse();
   delay(200);
   
   }
   else {
+    //In case the connection is lost:
     digitalWrite(red_LED, HIGH);
     digitalWrite(green_LED, LOW);
   }
 } 
-
-//drone.commandResponse("battery?");
-      //drone.commandResponse("time?");
-      
-      
-      
-
-     /* while(drone.commandResponse != "ok"){
-        Serial.println("Waiting..");
-      }
-      */
-      //btn.loop;
-
-     /* if(btn.pressed){
-        sendCommand("takeoff");
-        delay(500);
-      } */
-      
-
-      /* if(btn.pressed){
-        sendCommand("land");
-        delay(500);
-      } */
-    
-
-     /* if(millis()-previous_time > WAIT_TIME)
-    {
-      Serial.println("Waiting......");
-    } */
-
-     /* if(analogRead(speed_potent
-    )!=-1){
-
-        int val = analogRead(speed_potent
-      );
-        //Serial.println(val);
-        val = map(val, 0, 4095, 10, 100);
-        //string s="speed '" + val;
-        sendCommand("speed '" + val);
-      }
-      */
-      //"Sending command '" + message + "'"
-
-      
-      // This works!
