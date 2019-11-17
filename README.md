@@ -7,6 +7,6 @@ Hardware Components:Ryze
 
 Tello Drone
 
-Controller:ESP32 Dev Kit, 2 Led (Green, Red), 4 push buttons, 4 resistors, Dual axis joystick module, Potentiometer (10 Ohms), Wiring, Breadboard
+Controller: ESP32 Dev Kit, 2 Led (Green, Red), 4 push buttons, 4 resistors, Dual axis joystick module, Potentiometer (10 Ohms), Wiring, Breadboard
 
 Checkpoint: ESP32 Dev Kit, LED strip, Wiring, Breadboard
